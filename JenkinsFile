@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    tools {
+        maven "Maven"
+    }
+    triggers {
+    pollSCM('') // Enabling being build on Push
+    }
+    environment {
+        PATH = "C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\bin;${env.PATH}"
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk1.8.0_271'
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "localhost:8081"
+        NEXUS_REPOSITORY = "nexus"
+        NEXUS_CREDENTIAL_ID = "e0160b1f-fafd-4db0-b403-ea267f9f698c"
+    }
+    stages {
+        stage ('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://balajis1648:vikramguru@1999S@github.com/balajis1648/Jars-To-Nexus.git'
+     }
+        }
+        stage("Maven Build") {
+            steps {
+                script {
+                    bat "mvn package -DskipTests=true"
+                }
+            }
+        }
+        stage("Publish to Nexus Repository Manager") {
+            steps {
+                script {
+                    nexusArtifactUploader artifacts: [[artifactId: 'Jars-to-Nexus', classifier: '', file: 'target/Jars-to-Nexus-0.0.1-SNAPSHOT.jar', type: 'jar']], credentialsId: 'e0160b1f-fafd-4db0-b403-ea267f9f698c', groupId: 'com.example', nexusUrl: 'localhost:8081/repository/nexus/', nexusVersion: 'nexus3', protocol: 'http', repository: 'nexus', version: '0.0.1-SNAPSHOT'
+                }
+            }
+        }
+    }
+}
